@@ -1,0 +1,53 @@
+{
+  "name": "hububble",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/TygroTheProgrammer/Hububble#readme",
+  "bugs": {
+    "url": "https://github.com/TygroTheProgrammer/Hububble/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TygroTheProgrammer/Hububble.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "webpack.config.js",
+  "scripts": {
+    "build": "webpack --mode production"
+  },
+  "dependencies": {
+    "compression": "^1.8.0",
+    "express": "^4.21.2",
+    "morgan": "^1.10.0",
+    "passport": "^0.7.0",
+    "phaser": "^3.88.2",
+    "redux": "^5.0.1",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.8",
+    "@babel/plugin-proposal-class-properties": "^7.12.1",
+    "@babel/plugin-proposal-decorators": "^7.12.1",
+    "@babel/plugin-proposal-export-namespace-from": "^7.12.1",
+    "@babel/plugin-proposal-function-sent": "^7.12.1",
+    "@babel/plugin-proposal-json-strings": "^7.12.1",
+    "@babel/plugin-proposal-numeric-separator": "^7.12.7",
+    "@babel/plugin-proposal-throw-expressions": "^7.12.1",
+    "@babel/plugin-syntax-dynamic-import": "^7.8.3",
+    "@babel/plugin-syntax-import-meta": "^7.10.4",
+    "@babel/plugin-transform-modules-commonjs": "^7.26.3",
+    "@babel/plugin-transform-runtime": "^7.12.1",
+    "@babel/polyfill": "^7.12.1",
+    "@babel/preset-env": "^7.26.9",
+    "@babel/preset-react": "^7.12.7",
+    "@babel/register": "^7.12.1",
+    "axios-mock-adapter": "^2.1.0",
+    "babel-loader": "^9.2.1",
+    "nodemon": "^3.1.9",
+    "raw-loader": "^4.0.2",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1"
+  }
+}
