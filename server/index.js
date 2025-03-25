@@ -54,16 +54,20 @@ const createApp = () => {
 const startListening = () => {
     // Create a server object
     const server = app.listen(PORT, () => 
-        console.log("Listening on port \$\{PORT\}")
+        console.log(`Listening on port ${PORT}`)
     );
-    
     const io = socketio(server);
     require("./socket")(io);
 };
 
-async function  bootApp() {
+async function bootApp() {
     await createApp();
     await startListening();
 }
 
-bootApp();
+if (require.main === module) {
+    bootApp();
+}
+else{
+    createApp();
+}
