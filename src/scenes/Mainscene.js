@@ -37,7 +37,7 @@ export default class MainScene extends Phaser.Scene {
         this.cameras.main.setZoom(4); // 4x zoom
         this.cameras.main.setBounds(0, 0, 200, 100);
         
-        this.add.image(0,0, "mainroom");
+        this.add.image(100,50, "mainroom");
 
         this.socket = io();
 
@@ -77,5 +77,8 @@ export default class MainScene extends Phaser.Scene {
         })
     }
 
-    update() {}
+    update() {
+
+        
+    }
 }
