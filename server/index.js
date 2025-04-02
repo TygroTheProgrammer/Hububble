@@ -1,4 +1,3 @@
-// This is a test
 // Set up server
 const path = require("path");
 const express = require("express");
@@ -70,7 +69,7 @@ const startListening = () => {
         console.log(`Listening on port ${PORT}`)
     );
     const io = socketio(server);
-    require("./socket")(io, redisClient); // Ensure the path is correct and matches the actual file structure
+    require("./socket/index")(io, redisClient); // Explicitly specify the correct file path
 };
 
 async function bootApp() {
