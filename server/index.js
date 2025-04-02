@@ -70,7 +70,7 @@ const startListening = () => {
         console.log(`Listening on port ${PORT}`)
     );
     const io = socketio(server);
-    require("./socket")(io);
+    require("./socket")(io, redisClient); // Ensure the path is correct and matches the actual file structure
 };
 
 async function bootApp() {
