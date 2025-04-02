@@ -78,13 +78,15 @@ module.exports = (io, redisClient) => {
     socket.on("playerMovement", async (data) => {
       const { x, y, roomKey } = data;
       const roomInfo = JSON.parse(await redisClient.get(roomKey));
-      if (roomInfo && roomInfo.players[socket.id]) {
-        roomInfo.players[socket.id].x = x;
-        roomInfo.players[socket.id].y = y;
-        await redisClient.set(roomKey, JSON.stringify(roomInfo));
-
-        socket.to(roomKey).emit("playerMoved", roomInfo.players[socket.id]);
+      if (!roomInfo || !roomInfo.players || !roomInfo.players[socket.id]) {
+        console.error(`Invalid roomKey or player not found: ${roomKey}`);
+        return;
       }
+      roomInfo.players[socket.id].x = x;
+      roomInfo.players[socket.id].y = y;
+      await redisClient.set(roomKey, JSON.stringify(roomInfo));
+
+      socket.to(roomKey).emit("playerMoved", roomInfo.players[socket.id]);
     });
 
     /**
