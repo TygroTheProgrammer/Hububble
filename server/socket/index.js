@@ -39,7 +39,6 @@ const gameRooms = {
         });
       });
 
-
   
       socket.on("isKeyValid", function (input) {
         Object.keys(gameRooms).includes(input)
@@ -60,8 +59,20 @@ const gameRooms = {
         };
         socket.emit("roomCreated", key);
       });
+
+      socket.on("playerMovement", function (data) {
+        const {x, y, roomKey } = data;
+        gameRooms[roomKey].players[socket.id].x = x;
+        gameRooms[roomKey].players[socket.id].y = y;
+  
+        socket
+          .to(roomKey)
+          .emit("playerMoved", gameRooms[roomKey].players[socket.id]);
+      });
+    
     });
-  };
+    
+  }
   
   function codeGenerator() {
     let code = "";
