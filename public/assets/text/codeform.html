@@ -1,4 +1,11 @@
+<!-- 
+This file contains the HTML structure for a form that allows users to enter a room key 
+and join a specific room in the application. It includes an input field for the room key 
+and a button to submit the form. 
+-->
+
 <style>
+  /* Styling for the input box to remove borders and background */
   #input-box {
     resize: none;
     background: none;
@@ -9,12 +16,14 @@
 
 <div class="container">
   <form>
+    <!-- Input field for entering the room key -->
     <input
       type="text"
       id="code-form-id"
       name="code-form"
       placeholder="enter room key"
     />
+    <!-- Button to trigger the room join action -->
     <button type="button" id="enterRoom-id" name="enterRoom">enter</button>
   </form>
 </div>

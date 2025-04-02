@@ -4,10 +4,22 @@ const path = require("path");
 const express = require("express");
 const morgan = require("morgan");
 const compression = require("compression")
+const { createClient } = require("redis");
 const PORT = process.env.PORT || 8080;
 const app = express();
 const socketio = require("socket.io");
-module.exports = app;
+
+// Initialize Redis client
+const redisClient = createClient();
+
+redisClient.on('error', (err) => console.error('Redis Client Error', err));
+
+(async () => {
+  await redisClient.connect();
+  console.log('Connected to Redis');
+})();
+
+module.exports = { app, redisClient };
 
 const createApp = () => {
     //Set up logging middleware
