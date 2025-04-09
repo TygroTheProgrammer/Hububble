@@ -91,11 +91,41 @@ module.exports = (io, redisClient) => {
 
     /**
      * Event: disconnect
-     * Handles player disconnection and optionally removes the player from the room.
+     * Handles player disconnection and removes the player from the room.
      */
     socket.on("disconnect", async () => {
       console.log(`Socket disconnected: ${socket.id}`);
-      // Optionally handle player removal from Redis here
+
+      // Iterate through all rooms in Redis to find the room the player belongs to
+      const keys = await redisClient.keys("*");
+      let roomKey = null;
+      let roomInfo = null;
+
+      for (const key of keys) {
+        const data = JSON.parse(await redisClient.get(key));
+        if (data.players && data.players[socket.id]) {
+          roomKey = key;
+          roomInfo = data;
+          break;
+        }
+      }
+
+      if (roomInfo) {
+        console.log(`User disconnected from room: ${roomKey}`);
+
+        // Remove the player from the room
+        delete roomInfo.players[socket.id];
+        roomInfo.numPlayers = Object.keys(roomInfo.players).length;
+
+        // Update the room data in Redis
+        await redisClient.set(roomKey, JSON.stringify(roomInfo));
+
+        // Notify other players in the room about the disconnection
+        io.to(roomKey).emit("disconnected", {
+          playerId: socket.id,
+          numPlayers: roomInfo.numPlayers,
+        });
+      }
     });
   });
 };

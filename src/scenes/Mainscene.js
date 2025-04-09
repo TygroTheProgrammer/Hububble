@@ -70,6 +70,17 @@ export default class MainScene extends Phaser.Scene {
             });
         });
         this.cursors = this.input.keyboard.createCursorKeys();
+
+        this.socket.on("disconnect", function (arg) {
+            const { playerId, numPlayers } = arg;
+            scene.state.numPlayers = numPlayers;
+            scene.otherPlayers.getChildren().forEach(function (otherPlayer) {
+                if (playerId === otherPlayer.playerId) {
+                    otherPlayer.destroy();
+                }
+            });
+        });
+        
     }
 
     update() {
@@ -124,7 +135,18 @@ export default class MainScene extends Phaser.Scene {
     {
         scene.joined = true;
         scene.bubble = scene.physics.add
-        .sprite(playerInfo.x, playerInfo.y, "bubble")
+            .sprite(playerInfo.x, playerInfo.y, "bubble");
+        
+        // Configure camera to follow player with smooth movement
+        scene.cameras.main.startFollow(scene.bubble, true, 0.1, 0.1);
+        scene.cameras.main.setFollowOffset(0, 0); // Center the player on the screen
+        
+        // Set deadzone to null to ensure camera always tries to center the player
+        scene.cameras.main.setDeadzone(0, 0);
+        
+        // Adjust bounds if needed to ensure player can move throughout the entire game world
+        // Comment out the next line if you don't want the camera bounded
+        // scene.cameras.main.setBounds(0, 0, 200, 100); 
     }
 
     addOtherPlayers(scene, playerInfo)
