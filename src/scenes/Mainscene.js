@@ -26,9 +26,22 @@ export default class MainScene extends Phaser.Scene {
         scene.scene.launch("WaitingRoom", { socket: scene.socket });
 
         this.otherPlayers = this.physics.add.group();
-        
-        
-        
+
+        // Add mouse-based movement
+        this.input.on("pointerdown", function (pointer) {
+            if (scene.bubble) {
+                scene.targetPointer = { x: pointer.worldX, y: pointer.worldY };
+                scene.isMouseDown = true;
+            }
+        });
+
+        this.input.on("pointerup", function () {
+            if (scene.bubble) {
+                scene.isMouseDown = false;
+                scene.bubble.body.setVelocity(0);
+            }
+        });
+
         this.socket.on("setState", function (state) {
             const { roomKey, players, numPlayers } = state;
             scene.physics.resume();
@@ -36,8 +49,6 @@ export default class MainScene extends Phaser.Scene {
             scene.state.roomKey = roomKey;
             scene.state.players = players;
             scene.state.numPlayers = numPlayers;
-
-
         });
 
         this.socket.on("currentPlayers", function (arg) {
@@ -94,46 +105,72 @@ export default class MainScene extends Phaser.Scene {
         const scene = this;
 
         if (this.bubble) {
-          const speed = 50;
-          const prevVelocity = this.bubble.body.velocity.clone();
-    
-          this.bubble.body.setVelocity(0);
-    
-          if(this.cursors.left.isDown) {
-            this.bubble.body.setVelocityX(-speed);
-          } else if (this.cursors.right.isDown) {
-            this.bubble.body.setVelocityX(speed);
-          }
-    
-          if (this.cursors.up.isDown) {
-            this.bubble.body.setVelocityY(-speed);
-          }
-          else if (this.cursors.down.isDown) {
-            this.bubble.body.setVelocityY(speed);
-          }
-    
-          this.bubble.body.velocity.normalize().scale(speed);
-    
-          var x = this.bubble.x;
-          var y = this.bubble.y;
-    
-          if (this.bubble.oldPosition && 
-            (x != this.bubble.oldPosition.x || 
-            y != this.bubble.oldPosition.y))
-            {
-              this.moving = true;
-              this.socket.emit("playerMovement", {
+            const speed = 50;
+
+            // Handle mouse-based movement
+            if (scene.isMouseDown && scene.targetPointer) {
+                const angle = Phaser.Math.Angle.Between(
+                    this.bubble.x,
+                    this.bubble.y,
+                    scene.targetPointer.x,
+                    scene.targetPointer.y
+                );
+
+                this.bubble.body.setVelocity(
+                    Math.cos(angle) * speed,
+                    Math.sin(angle) * speed
+                );
+
+                // Stop moving if the player reaches the target
+                const distance = Phaser.Math.Distance.Between(
+                    this.bubble.x,
+                    this.bubble.y,
+                    scene.targetPointer.x,
+                    scene.targetPointer.y
+                );
+
+                if (distance < speed / 10) {
+                    this.bubble.body.setVelocity(0);
+                    scene.targetPointer = null;
+                }
+            } else {
+                // Handle keyboard-based movement
+                this.bubble.body.setVelocity(0);
+
+                if (this.cursors.left.isDown) {
+                    this.bubble.body.setVelocityX(-speed);
+                } else if (this.cursors.right.isDown) {
+                    this.bubble.body.setVelocityX(speed);
+                }
+
+                if (this.cursors.up.isDown) {
+                    this.bubble.body.setVelocityY(-speed);
+                } else if (this.cursors.down.isDown) {
+                    this.bubble.body.setVelocityY(speed);
+                }
+
+                this.bubble.body.velocity.normalize().scale(speed);
+            }
+
+            const x = this.bubble.x;
+            const y = this.bubble.y;
+
+            if (
+                this.bubble.oldPosition &&
+                (x !== this.bubble.oldPosition.x || y !== this.bubble.oldPosition.y)
+            ) {
+                this.socket.emit("playerMovement", {
+                    x: this.bubble.x,
+                    y: this.bubble.y,
+                    roomKey: scene.state.roomKey,
+                });
+            }
+
+            this.bubble.oldPosition = {
                 x: this.bubble.x,
                 y: this.bubble.y,
-                roomKey: scene.state.roomKey,
-              });
-            }
-            this.bubble.oldPosition = {
-              x: this.bubble.x,
-              y: this.bubble.y,
-              rotation: this.bubble.rotation,
+                rotation: this.bubble.rotation,
             };
-
         }
         
     }
