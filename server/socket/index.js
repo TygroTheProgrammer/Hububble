@@ -121,10 +121,16 @@ module.exports = (io, redisClient) => {
         await redisClient.set(roomKey, JSON.stringify(roomInfo));
 
         // Notify other players in the room about the disconnection
-        io.to(roomKey).emit("disconnected", {
+        io.to(roomKey).emit("playerDisconnected", {
           playerId: socket.id,
           numPlayers: roomInfo.numPlayers,
         });
+
+        // If the room is empty, optionally delete it from Redis
+        if (roomInfo.numPlayers === 0) {
+          await redisClient.del(roomKey);
+          console.log(`Room ${roomKey} deleted as it is now empty.`);
+        }
       }
     });
   });
