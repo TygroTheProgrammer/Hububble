@@ -90,6 +90,24 @@ module.exports = (io, redisClient) => {
     });
 
     /**
+     * Event: chatMessage
+     * Handles incoming chat messages and broadcasts them to the room.
+     */
+    socket.on("chatMessage", async (data) => {
+      const { roomKey, message, playerId } = data;
+
+      // Ensure the room exists
+      const roomInfo = JSON.parse(await redisClient.get(roomKey));
+      if (!roomInfo) {
+        console.error(`Invalid roomKey: ${roomKey}`);
+        return;
+      }
+
+      // Broadcast the message to all players in the room
+      io.to(roomKey).emit("chatMessage", { playerId, message });
+    });
+
+    /**
      * Event: disconnect
      * Handles player disconnection and removes the player from the room.
      */

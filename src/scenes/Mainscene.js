@@ -17,9 +17,9 @@ export default class MainScene extends Phaser.Scene {
     create() {
         const scene = this;
         this.cameras.main.setZoom(4); // 4x zoom
-        this.cameras.main.setBounds(0, 0, 200, 100);
+        this.cameras.main.setBounds(0, 0, 200, 150);
         
-        this.add.image(100,50, "mainroom");
+        this.add.image(100, 75, "mainroom");
 
         this.socket = io();
 
@@ -97,6 +97,39 @@ export default class MainScene extends Phaser.Scene {
             if (scene.state.players) {
                 delete scene.state.players[playerId];
             }
+        });
+
+        // Chat UI
+        this.chatInput = this.add.dom(100, 90).createFromHTML(`
+            <input type="text" id="chat-input" placeholder="Type a message..." style="width: 50px;" />
+        `);
+        this.chatInput.addListener("keydown");
+        this.chatInput.on("keydown", function (event) {
+            if (event.key === "Enter") {
+                const inputElement = document.getElementById("chat-input");
+                const message = inputElement.value.trim();
+                if (message) {
+                    scene.socket.emit("chatMessage", {
+                        roomKey: scene.state.roomKey,
+                        message,
+                        playerId: scene.socket.id,
+                    });
+                    inputElement.value = ""; // Clear input
+                }
+            }
+        });
+
+        // Display chat messages
+        this.chatMessages = this.add.text(10, 10, "", {
+            fontSize: "12px",
+            fill: "#000000",
+            wordWrap: { width: 180 },
+        });
+
+        this.socket.on("chatMessage", function (data) {
+            const { playerId, message } = data;
+            const newMessage = `${playerId}: ${message}\n`;
+            scene.chatMessages.setText(scene.chatMessages.text + newMessage);
         });
         
     }
