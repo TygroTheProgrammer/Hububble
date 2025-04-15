@@ -49,6 +49,8 @@ export default class MainScene extends Phaser.Scene {
             scene.state.roomKey = roomKey;
             scene.state.players = players;
             scene.state.numPlayers = numPlayers;
+
+            scene.scene.launch("ChatScene", { socket: scene.socket, roomKey, mainCamera: scene.cameras.main });
         });
 
         this.socket.on("currentPlayers", function (arg) {
@@ -99,38 +101,15 @@ export default class MainScene extends Phaser.Scene {
             }
         });
 
-        // Chat UI
-        this.chatInput = this.add.dom(100, 90).createFromHTML(`
-            <input type="text" id="chat-input" placeholder="Type a message..." style="width: 50px;" />
-        `);
-        this.chatInput.addListener("keydown");
-        this.chatInput.on("keydown", function (event) {
-            if (event.key === "Enter") {
-                const inputElement = document.getElementById("chat-input");
-                const message = inputElement.value.trim();
-                if (message) {
-                    scene.socket.emit("chatMessage", {
-                        roomKey: scene.state.roomKey,
-                        message,
-                        playerId: scene.socket.id,
-                    });
-                    inputElement.value = ""; // Clear input
-                }
-            }
-        });
+        // Remove redundant chat input box
+        if (this.chatInput) {
+            this.chatInput.destroy();
+        }
 
-        // Display chat messages
-        this.chatMessages = this.add.text(10, 10, "", {
-            fontSize: "12px",
-            fill: "#000000",
-            wordWrap: { width: 180 },
-        });
-
-        this.socket.on("chatMessage", function (data) {
-            const { playerId, message } = data;
-            const newMessage = `${playerId}: ${message}\n`;
-            scene.chatMessages.setText(scene.chatMessages.text + newMessage);
-        });
+        // Remove chat messages from the main scene
+        if (this.chatMessages) {
+            this.chatMessages.destroy();
+        }
         
     }
 

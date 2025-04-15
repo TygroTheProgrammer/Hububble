@@ -92,9 +92,27 @@ module.exports = (io, redisClient) => {
     /**
      * Event: chatMessage
      * Handles incoming chat messages and broadcasts them to the room.
+     * Stores chat messages in Redis.
      */
     socket.on("chatMessage", async (data) => {
       const { roomKey, message, playerId } = data;
+
+      // Validate input data
+      if (!roomKey) {
+        console.error("Invalid chat message: Missing roomKey", data);
+        return;
+      }
+      if (typeof message !== "string" || message.trim() === "") {
+        console.error("Invalid chat message: Message must be a non-empty string", data);
+        return;
+      }
+      if (!playerId) {
+        console.error("Invalid chat message: Missing playerId", data);
+        return;
+      }
+
+      // Sanitize the message to prevent malicious code
+      const sanitizedMessage = message.replace(/</g, "&lt;").replace(/>/g, "&gt;").trim();
 
       // Ensure the room exists
       const roomInfo = JSON.parse(await redisClient.get(roomKey));
@@ -103,8 +121,36 @@ module.exports = (io, redisClient) => {
         return;
       }
 
+      // Ensure the player is part of the room
+      if (!roomInfo.players || !roomInfo.players[playerId]) {
+        console.error(`Player ${playerId} is not part of room ${roomKey}`);
+        return;
+      }
+
+      // Store the message in Redis
+      const chatLogKey = `chat:${roomKey}`;
+      try {
+        const chatEntry = JSON.stringify({ playerId, message: sanitizedMessage });
+        await redisClient.rPush(chatLogKey, chatEntry);
+      } catch (error) {
+        console.error("Failed to store chat message in Redis:", error);
+        return;
+      }
+
       // Broadcast the message to all players in the room
-      io.to(roomKey).emit("chatMessage", { playerId, message });
+      io.to(roomKey).emit("chatMessage", { playerId, message: sanitizedMessage });
+    });
+
+    // Add an endpoint to fetch chat logs
+    socket.on("fetchChatLog", async (roomKey) => {
+      const chatLogKey = `chat:${roomKey}`;
+      try {
+        const chatLog = await redisClient.lRange(chatLogKey, 0, -1);
+        const parsedLog = chatLog.map((entry) => JSON.parse(entry));
+        socket.emit("chatLog", parsedLog);
+      } catch (error) {
+        console.error("Failed to fetch chat log from Redis:", error);
+      }
     });
 
     /**
