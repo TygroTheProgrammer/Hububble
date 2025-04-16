@@ -13,6 +13,7 @@ export default class WaitingRoom extends Phaser.Scene {
 
   preload() {
     this.load.html("codeform", "assets/text/codeform.html");
+    this.load.html("nameform", "assets/text/nameform.html"); // preload new name form
   }
 
   create() {
@@ -86,9 +87,24 @@ export default class WaitingRoom extends Phaser.Scene {
     scene.socket.on("keyNotValid", function () {
       scene.notValidText.setText("Invalid Room Key");
     });
+
+    // Instead of joining room directly, display a name prompt
     scene.socket.on("keyIsValid", function (input) {
-      scene.socket.emit("joinRoom", input);
-      scene.scene.stop("WaitingRoom");
+      scene.roomKey = input;
+      // Remove any previous error messages
+      scene.notValidText.setText("");
+      // Display the name entry form
+      scene.nameElement = scene.add.dom(562.5, 350).createFromCache("nameform");
+      scene.nameElement.addListener("submit");
+      scene.nameElement.on("submit", function (event) {
+        event.preventDefault();
+        const nameInput = scene.nameElement.getChildByName("name-form");
+        if (nameInput.value.trim()) {
+          // Emit joinRoom with an object containing roomKey and the entered name
+          scene.socket.emit("joinRoom", { roomKey: scene.roomKey, name: nameInput.value.trim() });
+          scene.scene.stop("WaitingRoom");
+        }
+      });
     });
   }
   update() {}

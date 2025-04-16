@@ -66,11 +66,11 @@ export default class ChatScene extends Phaser.Scene {
 
         // Listen for new chat messages
         this.socket.on("chatMessage", (data) => {
-            const { playerId, message } = data;
+            const { displayName, message } = data;
             const chatContainerElement = document.getElementById("chat-container");
             if (chatContainerElement) {
                 const newMessage = document.createElement("div");
-                newMessage.innerHTML = `<strong>${playerId}:</strong> ${message}`;
+                newMessage.innerHTML = `<strong>${displayName}:</strong> ${message}`;
                 chatContainerElement.prepend(newMessage); // Add new messages at the bottom
             }
         });

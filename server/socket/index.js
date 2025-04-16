@@ -7,6 +7,24 @@
  * @param {Object} redisClient - The Redis client instance for managing room data.
  */
 
+// Global error handlers for unhandled promise rejections and uncaught exceptions
+process.on("unhandledRejection", (err) => {
+  if (err && err.message && err.message.includes("WRONGTYPE Operation against a key holding the wrong kind of value")) {
+    console.error("Caught WRONGTYPE error from promise:", err.message);
+  } else {
+    console.error("Unhandled rejection:", err);
+  }
+});
+
+process.on("uncaughtException", (err) => {
+  if (err && err.message && err.message.includes("WRONGTYPE Operation against a key holding the wrong kind of value")) {
+    console.error("Caught WRONGTYPE error from exception:", err.message);
+  } else {
+    console.error("Uncaught exception:", err);
+    process.exit(1);
+  }
+});
+
 module.exports = (io, redisClient) => {
   io.on("connection", (socket) => {
     console.log(`A socket connection to the server has been made: ${socket.id}`);
@@ -16,12 +34,14 @@ module.exports = (io, redisClient) => {
      * Allows a player to join a specific room using a room key.
      * Updates the room's player list in Redis and notifies other players in the room.
      */
-    socket.on("joinRoom", async (roomKey) => {
+    socket.on("joinRoom", async (data) => {
+      const roomKey = data.roomKey;
       socket.join(roomKey);
 
       const roomInfo = JSON.parse(await redisClient.get(roomKey)) || {};
       roomInfo.players = roomInfo.players || {};
       roomInfo.players[socket.id] = {
+        name: data.name,
         rotation: 0,
         x: 100,
         y: 50,
@@ -116,16 +136,13 @@ module.exports = (io, redisClient) => {
 
       // Ensure the room exists
       const roomInfo = JSON.parse(await redisClient.get(roomKey));
-      if (!roomInfo) {
-        console.error(`Invalid roomKey: ${roomKey}`);
+      if (!roomInfo || !roomInfo.players || !roomInfo.players[playerId]) {
+        console.error("Player or room not found for chat message", data);
         return;
       }
 
-      // Ensure the player is part of the room
-      if (!roomInfo.players || !roomInfo.players[playerId]) {
-        console.error(`Player ${playerId} is not part of room ${roomKey}`);
-        return;
-      }
+      // Use the stored name from joinRoom or fallback to socket.id.
+      const displayName = roomInfo.players[playerId].name || playerId;
 
       // Store the message in Redis
       const chatLogKey = `chat:${roomKey}`;
@@ -137,8 +154,8 @@ module.exports = (io, redisClient) => {
         return;
       }
 
-      // Broadcast the message to all players in the room
-      io.to(roomKey).emit("chatMessage", { playerId, message: sanitizedMessage });
+      // Broadcast the message using displayName instead of playerId.
+      io.to(roomKey).emit("chatMessage", { displayName, message: sanitizedMessage });
     });
 
     // Add an endpoint to fetch chat logs
@@ -160,14 +177,20 @@ module.exports = (io, redisClient) => {
     socket.on("disconnect", async () => {
       console.log(`Socket disconnected: ${socket.id}`);
 
-      // Iterate through all rooms in Redis to find the room the player belongs to
+      // Iterate through all keys in Redis to find the room the player belongs to
       const keys = await redisClient.keys("*");
       let roomKey = null;
       let roomInfo = null;
 
       for (const key of keys) {
-        const data = JSON.parse(await redisClient.get(key));
-        if (data.players && data.players[socket.id]) {
+        let data;
+        try {
+          data = JSON.parse(await redisClient.get(key));
+        } catch (err) {
+          // Skip keys that cannot be parsed as JSON
+          continue;
+        }
+        if (data && data.players && data.players[socket.id]) {
           roomKey = key;
           roomInfo = data;
           break;
@@ -176,7 +199,6 @@ module.exports = (io, redisClient) => {
 
       if (roomInfo) {
         console.log(`User disconnected from room: ${roomKey}`);
-
         // Remove the player from the room
         delete roomInfo.players[socket.id];
         roomInfo.numPlayers = Object.keys(roomInfo.players).length;
@@ -190,7 +212,7 @@ module.exports = (io, redisClient) => {
           numPlayers: roomInfo.numPlayers,
         });
 
-        // If the room is empty, optionally delete it from Redis
+        // If the room is empty, delete it from Redis
         if (roomInfo.numPlayers === 0) {
           await redisClient.del(roomKey);
           console.log(`Room ${roomKey} deleted as it is now empty.`);
