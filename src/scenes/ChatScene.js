@@ -45,19 +45,21 @@ export default class ChatScene extends Phaser.Scene {
             " />
         `);
 
-        // Handle message sending
+        // Handle message sending and stop Phaser from intercepting the space key
         this.chatInput.addListener("keydown");
         this.chatInput.on("keydown", (event) => {
+            event.stopPropagation();  // Prevent Phaser from capturing the key event
             if (event.key === "Enter") {
+                event.preventDefault();
                 const inputElement = document.getElementById("chat-input");
-                const message = inputElement.value; // Allow spaces
+                const message = inputElement.value;
                 if (message.trim()) {
                     this.socket.emit("chatMessage", {
                         roomKey: this.roomKey,
                         message,
                         playerId: this.socket.id,
                     });
-                    inputElement.value = ""; // Clear input
+                    inputElement.value = "";
                 }
             }
         });
