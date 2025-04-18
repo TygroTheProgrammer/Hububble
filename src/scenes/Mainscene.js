@@ -1,6 +1,9 @@
 import Phaser from "phaser";
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> parent of e10220a (Test1)
 export default class MainScene extends Phaser.Scene {
     constructor() {
         super("MainScene");
