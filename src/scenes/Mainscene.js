@@ -1,6 +1,5 @@
 import Phaser from "phaser";
 
-import { io } from 'socket.io-client';
 
 export default class MainScene extends Phaser.Scene {
     constructor() {
@@ -23,7 +22,8 @@ export default class MainScene extends Phaser.Scene {
         
         this.add.image(100, 75, "mainroom");
 
-        this.socket = io();
+        // Updated socket connection using the proxy route defined above
+        this.socket = io("/socket.io");
 
         scene.scene.launch("WaitingRoom", { socket: scene.socket });
 
