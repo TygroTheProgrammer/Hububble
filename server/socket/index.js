@@ -61,6 +61,15 @@ module.exports = (io, redisClient) => {
         playerInfo: roomInfo.players[socket.id],
         numPlayers: roomInfo.numPlayers,
       });
+
+      // Send join system message with color property set to yellow
+      const displayName = roomInfo.players[socket.id].name || socket.id;
+      io.to(roomKey).emit("chatMessage", {
+        type: "system",
+        displayName: "System",
+        message: `${displayName} has joined the room`,
+        color: "yellow"
+      });
     });
 
     /**
@@ -154,8 +163,12 @@ module.exports = (io, redisClient) => {
         return;
       }
 
-      // Broadcast the message using displayName instead of playerId.
-      io.to(roomKey).emit("chatMessage", { displayName, message: sanitizedMessage });
+      // Broadcast the message with color if provided
+      io.to(roomKey).emit("chatMessage", { 
+        displayName, 
+        message: sanitizedMessage,
+        color: data.color || null 
+      });
     });
 
     // Add an endpoint to fetch chat logs
@@ -199,6 +212,15 @@ module.exports = (io, redisClient) => {
 
       if (roomInfo) {
         console.log(`User disconnected from room: ${roomKey}`);
+        // Send leave system message with color property set to yellow
+        const displayName = roomInfo.players[socket.id].name || socket.id;
+        io.to(roomKey).emit("chatMessage", {
+          type: "system",
+          displayName: "System",
+          message: `${displayName} has left the room`,
+          color: "yellow"
+        });
+
         // Remove the player from the room
         delete roomInfo.players[socket.id];
         roomInfo.numPlayers = Object.keys(roomInfo.players).length;
