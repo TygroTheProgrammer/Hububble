@@ -1,9 +1,6 @@
 import Phaser from "phaser";
 
-<<<<<<< HEAD
 
-=======
->>>>>>> parent of e10220a (Test1)
 export default class MainScene extends Phaser.Scene {
     constructor() {
         super("MainScene");
@@ -26,7 +23,7 @@ export default class MainScene extends Phaser.Scene {
         this.add.image(100, 75, "mainroom");
 
         // Updated socket connection using the proxy route defined above
-        this.socket = io("/socket.io");
+        this.socket = io();
 
         scene.scene.launch("WaitingRoom", { socket: scene.socket });
 
