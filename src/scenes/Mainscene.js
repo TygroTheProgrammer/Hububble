@@ -53,6 +53,9 @@ export default class MainScene extends Phaser.Scene {
             scene.state.numPlayers = numPlayers;
 
             scene.scene.launch("ChatScene", { socket: scene.socket, roomKey, mainCamera: scene.cameras.main });
+
+            // launch overlay scene for room code
+            scene.scene.launch("RoomCodeScene", { roomKey });
         });
 
         this.socket.on("currentPlayers", function (arg) {

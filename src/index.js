@@ -5,6 +5,7 @@ import config from "./config/config";
 import WaitingRoom from "./scenes/WaitingRoom";
 import MainScene from "./scenes/Mainscene";
 import ChatScene from "./scenes/ChatScene";
+import RoomCodeScene from "./scenes/RoomCodeScene";   // add this
 
 class Game extends Phaser.Game {
     constructor() {
@@ -14,6 +15,7 @@ class Game extends Phaser.Game {
         this.scene.add("MainScene", MainScene);
         this.scene.add("WaitingRoom", WaitingRoom);
         this.scene.add("ChatScene", ChatScene);
+        this.scene.add("RoomCodeScene", RoomCodeScene);  // register it
         this.scene.start("MainScene");
     }
 }
