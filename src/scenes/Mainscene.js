@@ -22,6 +22,14 @@ export default class MainScene extends Phaser.Scene {
         
         this.add.image(100, 75, "mainroom");
 
+        // define bubble move animation
+        this.anims.create({
+            key: 'bubble_move',
+            frames: this.anims.generateFrameNumbers('bubble',{ start: 0, end: 3 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
         // Updated socket connection using the proxy route defined above
         this.socket = io();
 
@@ -169,6 +177,22 @@ export default class MainScene extends Phaser.Scene {
                 this.bubble.body.velocity.normalize().scale(speed);
             }
 
+            // play/stop local bubble anim
+            const moving = this.bubble.body.velocity.x!==0 || this.bubble.body.velocity.y!==0;
+            if (moving) {
+                this.bubble.anims.play('bubble_move', true);
+            } else {
+                this.bubble.anims.stop();
+                this.bubble.setFrame(0);
+            }
+
+            // flip local bubble
+            if (this.bubble.body.velocity.x < 0) {
+                this.bubble.setFlipX(true);
+            } else if (this.bubble.body.velocity.x > 0) {
+                this.bubble.setFlipX(false);
+            }
+
             const x = this.bubble.x;
             const y = this.bubble.y;
 
@@ -189,6 +213,27 @@ export default class MainScene extends Phaser.Scene {
                 rotation: this.bubble.rotation,
             };
         }
+
+        // animate other players
+        scene.otherPlayers.getChildren().forEach(op=> {
+            // flip remote bubble
+            if (op.oldPosition) {
+                if (op.x < op.oldPosition.x) {
+                    op.setFlipX(true);
+                } else if (op.x > op.oldPosition.x) {
+                    op.setFlipX(false);
+                }
+            }
+
+            const moved = !op.oldPosition || op.x!==op.oldPosition.x || op.y!==op.oldPosition.y;
+            if (moved) {
+                op.anims.play('bubble_move', true);
+            } else {
+                op.anims.stop();
+                op.setFrame(0);
+            }
+            op.oldPosition = { x: op.x, y: op.y };
+        });
         
     }
 
