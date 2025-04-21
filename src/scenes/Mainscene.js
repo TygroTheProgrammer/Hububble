@@ -105,6 +105,9 @@ export default class MainScene extends Phaser.Scene {
             scene.otherPlayers.getChildren().forEach(function (otherPlayer) {
                 if (playerId === otherPlayer.playerId) {
                     otherPlayer.destroy();
+                    if (otherPlayer.displayNameText) {
+                        otherPlayer.displayNameText.destroy();
+                    }
                 }
             });
 
@@ -212,6 +215,12 @@ export default class MainScene extends Phaser.Scene {
                 y: this.bubble.y,
                 rotation: this.bubble.rotation,
             };
+
+            // Update the screen position of the player's name text
+            this.bubble.displayNameText.setPosition(
+                this.bubble.x,
+                this.bubble.y + 10 // Position above the sprite
+            );
         }
 
         // animate other players
@@ -233,6 +242,14 @@ export default class MainScene extends Phaser.Scene {
                 op.setFrame(0);
             }
             op.oldPosition = { x: op.x, y: op.y };
+
+            if (op.displayNameText) {
+                // Update the position of other players' name text
+                op.displayNameText.setPosition(
+                    op.x,
+                    op.y + 10 // Position above the sprite
+                );
+            }
         });
         
     }
@@ -253,6 +270,19 @@ export default class MainScene extends Phaser.Scene {
         // Adjust bounds if needed to ensure player can move throughout the entire game world
         // Comment out the next line if you don't want the camera bounded
         // scene.cameras.main.setBounds(0, 0, 200, 100); 
+
+        // Create high-resolution name text as a GUI element
+        scene.bubble.displayNameText = scene.add.dom(0, 0).createFromHTML(`
+            <div style="
+                font-size: 6px;
+                color: #FFFF00;
+                text-align: center;
+                font-family: pixel, sans-serif;
+                pointer-events: none;
+            ">
+                ${playerInfo.name || "Player"}
+            </div>
+        `);
     }
 
     addOtherPlayers(scene, playerInfo)
@@ -263,10 +293,20 @@ export default class MainScene extends Phaser.Scene {
             "bubble"
         );
         otherPlayer.playerId = playerInfo.playerId;
+
+        // Create high-resolution name text as a GUI element
+        otherPlayer.displayNameText = scene.add.dom(0, 0).createFromHTML(`
+            <div style="
+                font-size: 6px;
+                color: #FFFF00;
+                text-align: center;
+                font-family: pixel, sans-serif;
+                pointer-events: none;
+            ">
+                ${playerInfo.name || "Player"}
+            </div>
+        `);
+
         scene.otherPlayers.add(otherPlayer);
     }
-    
-    
-
-    
 }
