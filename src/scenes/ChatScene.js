@@ -93,6 +93,33 @@ export default class ChatScene extends Phaser.Scene {
                 });
             }
         });
+
+        // Track collapsed state
+        this.isCollapsed = false;
+
+        // Add hamburger/X toggle button
+        this.toggleButton = this.add.dom(0, 0).createFromHTML(`
+            <div id="chat-toggle" style="
+                width: 24px;
+                height: 24px;
+                background: rgba(34,34,34,0.8);
+                color: #fff;
+                font-size: 20px;
+                line-height: 24px;
+                text-align: center;
+                border-radius: 4px;
+                cursor: pointer;
+                user-select: none;
+            ">✕</div>
+        `);
+        this.toggleButton.addListener('click');
+        this.toggleButton.on('click', () => {
+            this.isCollapsed = !this.isCollapsed;
+            // use Phaser visibility instead of DOM style
+            this.chatContainer.setVisible(!this.isCollapsed);
+            this.chatInput.setVisible(!this.isCollapsed);
+            this.toggleButton.node.textContent = this.isCollapsed ? '☰' : '✕';
+        });
     }
 
     update() {
@@ -102,5 +129,11 @@ export default class ChatScene extends Phaser.Scene {
 
         this.chatContainer.setPosition(cameraX + 300, cameraY + 200);
         this.chatInput.setPosition(cameraX + 293, cameraY + 465); // Position input below the chat container
+
+        // Position toggle in the middle of the screen for testing
+        this.toggleButton.setPosition(
+            20,
+            20
+        );
     }
 }
