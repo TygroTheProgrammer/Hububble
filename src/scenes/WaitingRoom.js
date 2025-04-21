@@ -24,21 +24,21 @@ export default class WaitingRoom extends Phaser.Scene {
 
     // for popup window
     scene.popUp.lineStyle(1, 0xffffff);
-    scene.popUp.fillStyle(0xffffff, 0.5);
+    scene.popUp.fillStyle(0xffffff, 1);
 
     // for boxes
     scene.boxes.lineStyle(1, 0xffffff);
     scene.boxes.fillStyle(0xa9a9a9, 1);
 
     // popup window
-    scene.popUp.strokeRect(25, 25, 750, 500);
-    scene.popUp.fillRect(25, 25, 750, 500);
+    scene.popUp.strokeRect(0, 0, 800, 600);
+    scene.popUp.fillRect(0, 0, 800, 600);
 
     //title
-    scene.title = scene.add.text(100, 75, "Waiting Room", {
+    scene.title = scene.add.text(100, 75, "Hububble", {
       fill: "#add8e6",
       fontSize: "66px",
-      fontStyle: "bold",
+      fontFamily: "pixel",
     });
 
     //left popup
@@ -47,7 +47,7 @@ export default class WaitingRoom extends Phaser.Scene {
     scene.requestButton = scene.add.text(140, 215, "Request Room Key", {
       fill: "#000000",
       fontSize: "20px",
-      fontStyle: "bold",
+      fontFamily: "pixel",
     });
 
     //right popup
@@ -69,14 +69,14 @@ export default class WaitingRoom extends Phaser.Scene {
       scene.socket.emit("getRoomCode");
     });
 
-    scene.notValidText = scene.add.text(670, 295, "", {
+    scene.notValidText = scene.add.text(500, 295, "", {
       fill: "#ff0000",
       fontSize: "15px",
     });
     scene.roomKeyText = scene.add.text(210, 250, "", {
-      fill: "#00ff00",
-      fontSize: "20px",
-      fontStyle: "bold",
+      fill: "#add8e6",
+      fontSize: "30px",
+      fontFamily: "pixel",
     });
 
     scene.socket.on("roomCreated", function (roomKey) {

@@ -1,21 +1,22 @@
 /** @type {import("../typings/phaser")} */
 
-import "phaser";
+import Phaser from "phaser";
+// set default font for all Phaser Text objects
+Phaser.GameObjects.TextStyle.DEFAULT_FONT_FAMILY = 'pixel';
+
 import config from "./config/config";
 import WaitingRoom from "./scenes/WaitingRoom";
 import MainScene from "./scenes/Mainscene";
 import ChatScene from "./scenes/ChatScene";
-import RoomCodeScene from "./scenes/RoomCodeScene";   // add this
+import RoomCodeScene from "./scenes/RoomCodeScene";
 
 class Game extends Phaser.Game {
     constructor() {
-        //Add the config file to the game
         super(config);
-
         this.scene.add("MainScene", MainScene);
         this.scene.add("WaitingRoom", WaitingRoom);
         this.scene.add("ChatScene", ChatScene);
-        this.scene.add("RoomCodeScene", RoomCodeScene);  // register it
+        this.scene.add("RoomCodeScene", RoomCodeScene);
         this.scene.start("MainScene");
     }
 }
