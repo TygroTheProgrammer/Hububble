@@ -8,8 +8,12 @@ const PORT = process.env.PORT || 8080;
 const app = express();
 const socketio = require("socket.io");
 
-// Initialize Redis client
-const redisClient = createClient();
+// Use environment variables to specify the Redis connection,
+// defaulting to a Redis service on the Docker network at host "redis"
+const redisHost = process.env.REDIS_HOST || 'redis';
+const redisPort = process.env.REDIS_PORT || 6379;
+const redisURL = process.env.REDIS_URL || `redis://${redisHost}:${redisPort}`;
+const redisClient = createClient({ url: redisURL });
 
 redisClient.on('error', (err) => console.error('Redis Client Error', err));
 
