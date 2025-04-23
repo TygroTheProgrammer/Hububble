@@ -275,7 +275,7 @@ export default class MainScene extends Phaser.Scene {
         scene.bubble.displayNameText = scene.add.dom(0, 0).createFromHTML(`
             <div style="
                 font-size: 6px;
-                color: #FFFF00;
+                color: #4d869c;
                 text-align: center;
                 font-family: pixel, sans-serif;
                 pointer-events: none;
@@ -298,7 +298,7 @@ export default class MainScene extends Phaser.Scene {
         otherPlayer.displayNameText = scene.add.dom(0, 0).createFromHTML(`
             <div style="
                 font-size: 6px;
-                color: #FFFF00;
+                color: #4d869c;
                 text-align: center;
                 font-family: pixel, sans-serif;
                 pointer-events: none;
